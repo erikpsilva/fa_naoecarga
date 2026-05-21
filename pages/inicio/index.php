@@ -40,6 +40,9 @@ $calcCfg = [
     'animal_4_nome' => 'Outros',   'animal_4_pct' =>  8.00, 'animal_4_imagem' => 'uploads/animais/imgOutros.png',
     'valor_btn_1' => 30, 'valor_btn_2' => 60, 'valor_btn_3' => 120,
     'custo_por_animal' => 15.00,
+    'calc_pretitulo' => 'Calculadora de impacto',
+    'calc_titulo'    => 'Veja quantos animais <strong>você pode ajudar.</strong>',
+    'calc_texto'     => '<p>Seu apoio forma pessoas, impulsiona mudanças reais.</p><p>Use a calculadora e veja o impacto real da sua doação.</p>',
 ];
 try {
     $r = getDbConnection()->query("SELECT * FROM calculadora_config WHERE id = 1")->fetch();
@@ -204,10 +207,13 @@ function testimonialInitials($nome) {
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-4">
-                    <p class="homeEyebrow">Calculadora de impacto</p>
-                    <h2 class="homeTitle">Veja quantos animais <strong>você pode ajudar.</strong></h2>
-                    <p class="homeCalculator__text">Seu apoio forma pessoas, impulsiona mudanças reais.</p>
-                    <p class="homeCalculator__text">Use a calculadora e veja o impacto real da sua doação.</p>
+                    <?php if (!empty($calcCfg['calc_pretitulo'])): ?>
+                    <p class="homeEyebrow"><?= htmlspecialchars($calcCfg['calc_pretitulo']) ?></p>
+                    <?php endif; ?>
+                    <h2 class="homeTitle"><?= quillInline($calcCfg['calc_titulo']) ?></h2>
+                    <?php if (!empty($calcCfg['calc_texto'])): ?>
+                    <div class="homeCalculator__text"><?= $calcCfg['calc_texto'] ?></div>
+                    <?php endif; ?>
                 </div>
 
                 <div class="col-lg-8">

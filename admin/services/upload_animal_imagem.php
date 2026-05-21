@@ -84,6 +84,7 @@ try {
 
     echo json_encode(['success' => true, 'path' => $novoPath]);
 } catch (Exception $e) {
+    error_log('[upload_animal_imagem] slot=' . $slot . ' | ' . $e->getMessage());
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Erro ao salvar no banco.']);
 }

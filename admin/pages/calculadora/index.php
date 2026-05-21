@@ -11,6 +11,9 @@ $cfg = [
     'animal_4_nome' => 'Outros',   'animal_4_pct' =>  8.00, 'animal_4_imagem' => 'uploads/animais/imgOutros.png',
     'valor_btn_1' => 30, 'valor_btn_2' => 60, 'valor_btn_3' => 120,
     'custo_por_animal' => 15.00,
+    'calc_pretitulo' => 'Calculadora de impacto',
+    'calc_titulo'    => 'Veja quantos animais <strong>você pode ajudar.</strong>',
+    'calc_texto'     => '<p>Seu apoio forma pessoas, impulsiona mudanças reais.</p><p>Use a calculadora e veja o impacto real da sua doação.</p>',
 ];
 try {
     $r = $pdo->query("SELECT * FROM calculadora_config WHERE id = 1")->fetch();
@@ -22,6 +25,7 @@ try {
 <head>
 <title>Calculadora de Animais — Admin Animal não é carga</title>
 <?php include ROOT . '/admin/includes/assets.php'; ?>
+<link rel="stylesheet" href="https://cdn.quilljs.com/1.3.7/quill.snow.css">
 <style>
 .calcSection { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.08); padding: 28px 32px; margin-bottom: 24px; }
 .calcSection__title { font-size: 1rem; font-weight: 700; color: #222; margin: 0 0 6px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0; }
@@ -108,6 +112,43 @@ try {
             </div>
 
             <div id="calcAlert"></div>
+            <div id="calcTextoAlert"></div>
+
+            <!-- ── Texto da seção ── -->
+            <div class="calcSection">
+                <p class="calcSection__title">Texto da seção</p>
+                <p class="calcSection__sub">Título e parágrafos exibidos ao lado da calculadora no site. Use <strong>negrito</strong> para destaque.</p>
+
+                <form id="formCalcTexto">
+                    <div class="contField" style="margin-bottom:16px">
+                        <label style="font-size:.8rem;font-weight:600;color:#666;display:block;margin-bottom:6px">Pré-título (texto pequeno acima)</label>
+                        <input class="animalCard__input" type="text" id="calc_pretitulo"
+                               value="<?= htmlspecialchars($cfg['calc_pretitulo']) ?>"
+                               placeholder="Ex: Calculadora de impacto" maxlength="100">
+                    </div>
+
+                    <div class="contField" style="margin-bottom:16px">
+                        <label style="font-size:.8rem;font-weight:600;color:#666;display:block;margin-bottom:6px">Título <em>*</em></label>
+                        <div class="contQuillWrap contQuillWrap--sm" id="wrapCalcTitulo">
+                            <div id="edCalcTitulo"></div>
+                        </div>
+                        <input type="hidden" id="inpCalcTitulo">
+                    </div>
+
+                    <div class="contField" style="margin-bottom:20px">
+                        <label style="font-size:.8rem;font-weight:600;color:#666;display:block;margin-bottom:6px">Texto <em>*</em></label>
+                        <div class="contQuillWrap contQuillWrap--md" id="wrapCalcTexto">
+                            <div id="edCalcTexto"></div>
+                        </div>
+                        <input type="hidden" id="inpCalcTexto">
+                    </div>
+
+                    <div class="contActions">
+                        <button class="btnSalvar" type="submit" id="btnSalvarTexto">Salvar texto</button>
+                        <span class="contFeedback" id="feedbackTexto"></span>
+                    </div>
+                </form>
+            </div>
 
             <!-- ── Animais ── -->
             <div class="calcSection">
@@ -200,6 +241,61 @@ try {
 
 <?php include ROOT . '/admin/includes/footer/footer.php'; ?>
 <?php include ROOT . '/admin/includes/scripts.php'; ?>
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+<script>
+(function () {
+    var BASE = '<?= BASE_URL ?>';
+    var toolbar = [['bold', 'italic', 'underline'], ['clean']];
+
+    function makeQuill(edId, inpId, initial) {
+        var q = new Quill('#' + edId, { theme: 'snow', modules: { toolbar: toolbar } });
+        if (initial && initial.trim()) q.clipboard.dangerouslyPasteHTML(initial);
+        q.on('text-change', function () { document.getElementById(inpId).value = q.root.innerHTML; });
+        document.getElementById(inpId).value = q.root.innerHTML;
+        return q;
+    }
+
+    function isEmpty(html) { return html.replace(/<[^>]*>/g, '').trim() === ''; }
+
+    makeQuill('edCalcTitulo', 'inpCalcTitulo', <?= json_encode($cfg['calc_titulo']) ?>);
+    makeQuill('edCalcTexto',  'inpCalcTexto',  <?= json_encode($cfg['calc_texto']) ?>);
+
+    document.getElementById('formCalcTexto').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var btn = document.getElementById('btnSalvarTexto');
+        var fb  = document.getElementById('feedbackTexto');
+        var valid = true;
+
+        [['inpCalcTitulo', 'wrapCalcTitulo'], ['inpCalcTexto', 'wrapCalcTexto']].forEach(function (pair) {
+            var wrap = document.getElementById(pair[1]);
+            if (isEmpty(document.getElementById(pair[0]).value)) {
+                wrap.classList.add('is-invalid'); valid = false;
+            } else {
+                wrap.classList.remove('is-invalid');
+            }
+        });
+
+        if (!valid) { fb.textContent = 'Preencha todos os campos obrigatórios.'; fb.className = 'contFeedback contFeedback--err'; return; }
+
+        var fd = new FormData();
+        fd.append('secao',     'calculadora_texto');
+        fd.append('pretitulo', document.getElementById('calc_pretitulo').value.trim());
+        fd.append('titulo',    document.getElementById('inpCalcTitulo').value);
+        fd.append('texto',     document.getElementById('inpCalcTexto').value);
+
+        btn.disabled = true; btn.textContent = 'Salvando...'; fb.textContent = ''; fb.className = 'contFeedback';
+
+        fetch(BASE + '/admin/services/salvar_conteudo.php', { method: 'POST', body: fd })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+                btn.disabled = false; btn.textContent = 'Salvar texto';
+                if (res.success) { fb.textContent = 'Salvo com sucesso!'; fb.className = 'contFeedback contFeedback--ok'; }
+                else { fb.textContent = res.message || 'Erro ao salvar.'; fb.className = 'contFeedback contFeedback--err'; }
+            })
+            .catch(function () { btn.disabled = false; btn.textContent = 'Salvar texto'; fb.textContent = 'Erro de comunicação.'; fb.className = 'contFeedback contFeedback--err'; });
+    });
+})();
+</script>
 <script>
 (function () {
     var BASE_URL = '<?= BASE_URL ?>';

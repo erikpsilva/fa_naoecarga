@@ -248,5 +248,32 @@ if ($secao === 'apadrinhe') {
     exit;
 }
 
+/* ── Texto da Calculadora ────────────────────────────────────── */
+if ($secao === 'calculadora_texto') {
+    $pretitulo = trim($_POST['pretitulo'] ?? '');
+    $titulo    = cleanHtml($_POST['titulo'] ?? '');
+    $texto     = cleanHtml($_POST['texto']  ?? '');
+
+    if (!$titulo || !$texto) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Preencha todos os campos obrigatórios.']);
+        exit;
+    }
+
+    try {
+        getDbConnection()
+            ->prepare("UPDATE calculadora_config
+                       SET calc_pretitulo = :pre, calc_titulo = :tit, calc_texto = :txt
+                       WHERE id = 1")
+            ->execute([':pre' => $pretitulo, ':tit' => $titulo, ':txt' => $texto]);
+        echo json_encode(['success' => true]);
+    } catch (Exception $e) {
+        error_log('[salvar_conteudo:calculadora_texto] ' . $e->getMessage());
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Erro ao salvar no banco.']);
+    }
+    exit;
+}
+
 http_response_code(400);
 echo json_encode(['success' => false, 'message' => 'Seção inválida.']);
