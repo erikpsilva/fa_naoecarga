@@ -1,0 +1,9 @@
+[2026-05-09 02:31:59] RAW: {"resource":"https://api.mercadolibre.com/merchant_orders/40685848543","topic":"merchant_order"}
+[2026-05-09 02:32:00] RAW: {"action":"payment.created","api_version":"v1","data":{"id":"1346496227"},"date_created":"2026-05-09T05:31:59Z","id":131872515272,"live_mode":false,"type":"payment","user_id":"2964733367"}
+[2026-05-09 02:32:01] Payment 1346496227 status: approved pref: 
+[2026-05-09 02:46:50] RAW: {"resource":"https://api.mercadolibre.com/merchant_orders/40685975713","topic":"merchant_order"}
+[2026-05-09 02:48:20] RAW: {"action":"payment.created","api_version":"v1","data":{"id":"1346493505"},"date_created":"2026-05-09T05:48:18Z","id":131741561295,"live_mode":false,"type":"payment","user_id":"2964733367"}
+[2026-05-09 02:48:20] Payment 1346493505 status: approved pref: 
+[2026-05-11 17:40:21] RAW: {"resource":"https://api.mercadolibre.com/merchant_orders/40795291618","topic":"merchant_order"}
+[2026-05-11 17:42:14] RAW: {"action":"payment.created","api_version":"v1","data":{"id":"1346523747"},"date_created":"2026-05-11T20:42:12Z","id":131996779916,"live_mode":false,"type":"payment","user_id":"2964733367"}
+[2026-05-11 17:42:14] Payment 1346523747 status: approved pref: 

@@ -1,0 +1,193 @@
+.header {
+    left: 0;
+    padding: 20px 0 0 0;;
+    position: absolute;
+    top: 0;
+    transition: padding 0.35s ease, background 0.35s ease, box-shadow 0.35s ease;
+    width: 100%;
+    z-index: 10;
+
+    &--sticky {
+        background: rgba(12, 12, 12, 0.96);
+        box-shadow: 0 2px 16px rgba(0, 0, 0, 0.45);
+        padding: 8px 0;
+        position: fixed;
+
+        .header__logo {
+            width: 110px;
+        }
+
+        .header__nav {
+            background: transparent;
+            padding: 4px 14px;
+        }
+
+        .header__navLink {
+            font-size: 12px;
+            padding: 11px 15px;
+        }
+    }
+
+    &__content {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    &__brand {
+        display: block;
+        line-height: 0;
+    }
+
+    &__logo {
+        display: block;
+        height: auto;
+        transition: width 0.35s ease;
+        width: 160px;
+    }
+
+    &__nav {
+        align-items: center;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        gap: 0;
+        padding: 10px 20px;
+        transition: padding 0.35s ease, background 0.35s ease;
+        .radius;
+    }
+
+    &__navLink {
+        color: @white;
+        display: block;
+        font-size: 15px;
+        font-weight: @semi-bold;
+        line-height: 1;
+        padding: 19px 22px;
+        text-transform: uppercase;
+        .transition(0.25s all);
+
+        &:hover,
+        &--active {
+            background: #c72b35;
+            border-radius: 8px;
+            color: @white;
+        }
+    }
+
+    &__menuButton {
+        align-items: center;
+        background: transparent;
+        border: 0;
+        color: @white;
+        cursor: pointer;
+        display: none;
+        font-family: @font;
+        font-size: 9px;
+        font-weight: @semi-bold;
+        gap: 7px;
+        line-height: 1;
+        text-transform: uppercase;
+    }
+
+    &__menuButton .icon {
+        color: @white;
+        font-size: 26px;
+    }
+}
+
+.header__mobileMenu {
+    align-items: flex-start;
+    background: #0d0d0d;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    left: 0;
+    overflow-y: auto;
+    padding: 28px 20px 40px;
+    position: fixed;
+    right: 0;
+    top: 0;
+    transform: translateX(100%);
+    .transition(0.38s transform);
+    z-index: 200;
+
+    &--open {
+        transform: translateX(0);
+    }
+}
+
+.header__mobileClose {
+    align-items: center;
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    color: @white;
+    cursor: pointer;
+    display: flex;
+    font-family: @font;
+    font-size: 26px;
+    height: 50px;
+    justify-content: center;
+    line-height: 1;
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    .transition(0.25s border-color);
+    width: 50px;
+
+    &:hover {
+        border-color: rgba(255, 255, 255, 0.8);
+    }
+}
+
+.header__mobileLogo {
+    display: block;
+    margin-bottom: 44px;
+    width: 130px;
+    margin-left: 20px;
+}
+
+.header__mobileNav {
+    align-items: stretch;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+}
+
+.header__mobileNavLink {
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.8);
+    display: block;
+    font-size: 20px;
+    font-weight: @semi-bold;
+    padding: 16px 20px;
+    text-align: left;
+    text-transform: uppercase;
+    .transition(0.2s all);
+
+    &:hover,
+    &--active {
+        background: #c72b35;
+        color: @white;
+    }
+}
+
+@media @tablet {
+    .header {
+        padding: 5px 0;
+
+        &__logo {
+            width: 78px;
+        }
+
+        &__nav {
+            display: none;
+        }
+
+        &__menuButton {
+            display: flex;
+        }
+    }
+}
