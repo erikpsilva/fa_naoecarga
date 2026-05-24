@@ -7,10 +7,13 @@ $cp = [
     'texto1'          => '<p>Animais ainda sofrem todos os dias em nome da ciência, mesmo quando isso já poderia ser evitado.</p><p>Ao apoiar essa causa, você ajuda a mudar essa realidade de dentro para fora: formando profissionais, influenciando decisões e reduzindo o uso de animais de forma efetiva.</p><p>Cada contribuição gera impacto real. Menos sofrimento. Mais ciência. Mais consciência.</p>',
     't1_titulo'       => '+500 mil',
     't1_texto'        => 'Animais impactados diretamente por ano.',
+    't1_icone'        => 'uploads/icones/icone04.png',
     't2_titulo'       => 'Atuação',
     't2_texto'        => 'em comissões de éticas e políticas públicas.',
+    't2_icone'        => 'uploads/icones/icone05.png',
     't3_titulo'       => 'Formação',
     't3_texto'        => 'que transforma e multiplica o impacto',
+    't3_icone'        => 'uploads/icones/icone06.png',
     'texto2'          => '<p>O Fórum Animal trabalha para transformar a ciência, reduzindo e substituindo o uso de animais em pesquisas e ensino.</p><p>Em vez de atuar apenas nas consequências, atuamos na origem do problema: nas decisões que autorizam o uso de animais.</p><p>Por meio da atuação em comissões de ética (CEUAs), da formação de representantes da sociedade e da promoção de métodos alternativos, conseguimos gerar mudanças reais dentro de universidades, laboratórios e políticas públicas.</p><p>Esse trabalho já contribuiu para avanços importantes, como a proibição de testes em cosméticos e a adoção de métodos mais éticos e eficazes na ciência.</p><p>Ao apoiar essa causa, você não está apenas ajudando animais individualmente, você está ajudando a transformar todo o sistema que impacta milhões deles.</p>',
     'botao_texto'     => 'Saiba mais sobre bioética',
     'botao_link'      => '#bioetica',
@@ -46,7 +49,7 @@ try { $r = getDbConnection()->query("SELECT * FROM conteudo_apoiar WHERE id = 1"
                     <p>As alterações são refletidas imediatamente após salvar.</p>
                 </div>
                 <div class="contCard__body">
-                    <form id="formApoiar">
+                    <form id="formApoiar" enctype="multipart/form-data">
 
                         <div class="contField">
                             <label for="iPretitulo">Pré-título <em>(opcional — texto em vermelho acima do título)</em></label>
@@ -75,11 +78,11 @@ try { $r = getDbConnection()->query("SELECT * FROM conteudo_apoiar WHERE id = 1"
                             <p class="contTopics__title">Tópicos</p>
                             <?php
                             $tops = [
-                                1 => [$cp['t1_titulo'], $cp['t1_texto']],
-                                2 => [$cp['t2_titulo'], $cp['t2_texto']],
-                                3 => [$cp['t3_titulo'], $cp['t3_texto']],
+                                1 => [$cp['t1_titulo'], $cp['t1_texto'], $cp['t1_icone'] ?? 'uploads/icones/icone04.png'],
+                                2 => [$cp['t2_titulo'], $cp['t2_texto'], $cp['t2_icone'] ?? 'uploads/icones/icone05.png'],
+                                3 => [$cp['t3_titulo'], $cp['t3_texto'], $cp['t3_icone'] ?? 'uploads/icones/icone06.png'],
                             ];
-                            foreach ($tops as $n => [$tt, $tx]):
+                            foreach ($tops as $n => [$tt, $tx, $ticone]):
                             ?>
                             <div class="contTopicRow">
                                 <div class="contField">
@@ -95,6 +98,18 @@ try { $r = getDbConnection()->query("SELECT * FROM conteudo_apoiar WHERE id = 1"
                                         <div id="edT<?= $n ?>texto"></div>
                                     </div>
                                     <input type="hidden" name="t<?= $n ?>_texto" id="inpT<?= $n ?>texto">
+                                </div>
+                                <div class="contField">
+                                    <label>Tópico <?= $n ?> — Ícone <em>(PNG, SVG, JPG ou WebP — máx 2 MB)</em></label>
+                                    <div class="contImgWrap">
+                                        <img id="iconPreview<?= $n ?>" class="contImgPreview" style="max-width:80px;max-height:80px;object-fit:contain;"
+                                             src="<?= BASE_URL . '/' . htmlspecialchars($ticone) ?>" alt="Ícone <?= $n ?>">
+                                        <div>
+                                            <input type="file" name="t<?= $n ?>_icone" id="iconInput<?= $n ?>"
+                                                   accept="image/png,image/svg+xml,image/webp,image/jpeg">
+                                            <p class="contImgHint">Deixe em branco para manter o ícone atual.</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <?php endforeach; ?>
@@ -171,6 +186,18 @@ try { $r = getDbConnection()->query("SELECT * FROM conteudo_apoiar WHERE id = 1"
 
     var quillFields = ['Titulo','Texto1','T1titulo','T1texto','T2titulo','T2texto','T3titulo','T3texto','Texto2'];
 
+    // Icon previews
+    [1, 2, 3].forEach(function (n) {
+        document.getElementById('iconInput' + n).addEventListener('change', function () {
+            if (this.files && this.files[0]) {
+                var reader = new FileReader();
+                var id = 'iconPreview' + n;
+                reader.onload = function (e) { document.getElementById(id).src = e.target.result; };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+    });
+
     document.getElementById('formApoiar').addEventListener('submit', function (e) {
         e.preventDefault();
         var btn = document.getElementById('btnSalvar');
@@ -200,8 +227,15 @@ try { $r = getDbConnection()->query("SELECT * FROM conteudo_apoiar WHERE id = 1"
             .then(function (r) { return r.json(); })
             .then(function (res) {
                 btn.disabled = false; btn.textContent = 'Salvar';
-                if (res.success) { fb.textContent = 'Salvo com sucesso!'; fb.className = 'contFeedback contFeedback--ok'; }
-                else { fb.textContent = res.message || 'Erro ao salvar.'; fb.className = 'contFeedback contFeedback--err'; }
+                if (res.success) {
+                    fb.textContent = 'Salvo com sucesso!'; fb.className = 'contFeedback contFeedback--ok';
+                    if (res.icones) {
+                        [1, 2, 3].forEach(function (n) {
+                            var campo = 't' + n + '_icone';
+                            if (res.icones[campo]) document.getElementById('iconPreview' + n).src = BASE + '/' + res.icones[campo] + '?t=' + Date.now();
+                        });
+                    }
+                } else { fb.textContent = res.message || 'Erro ao salvar.'; fb.className = 'contFeedback contFeedback--err'; }
             })
             .catch(function () { btn.disabled = false; btn.textContent = 'Salvar'; fb.textContent = 'Erro de comunicação.'; fb.className = 'contFeedback contFeedback--err'; });
     });

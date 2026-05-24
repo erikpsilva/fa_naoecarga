@@ -112,19 +112,57 @@ if ($secao === 'intro') {
         $imagemAtual = $imagemNova
             ?? ($pdo->query("SELECT imagem FROM conteudo_intro WHERE id = 1")->fetchColumn() ?: 'images/imgRato.jpg');
 
+        // Resolve ícones dos tópicos
+        $iconeDir = ROOT . '/uploads/icones/';
+        if (!is_dir($iconeDir)) mkdir($iconeDir, 0755, true);
+        $iconeMimeMap = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp', 'image/svg+xml' => 'svg'];
+        $iconeNovos = [];
+
+        foreach (['t1_icone', 't2_icone', 't3_icone'] as $campo) {
+            if (empty($_FILES[$campo]) || $_FILES[$campo]['error'] !== UPLOAD_ERR_OK) continue;
+            $file = $_FILES[$campo];
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mime = finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
+            if (!isset($iconeMimeMap[$mime])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Formato inválido para ícone. Use PNG, SVG, JPG ou WebP.']);
+                exit;
+            }
+            if ($file['size'] > 2 * 1024 * 1024) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Ícone muito grande (máx 2 MB).']);
+                exit;
+            }
+            $filename = $campo . '_' . time() . '.' . $iconeMimeMap[$mime];
+            if (move_uploaded_file($file['tmp_name'], $iconeDir . $filename)) {
+                $originals = ['icone01.png', 'icone02.png', 'icone03.png'];
+                $old = $pdo->query("SELECT `$campo` FROM conteudo_intro WHERE id = 1")->fetchColumn();
+                if ($old && strpos($old, 'uploads/') === 0 && !in_array(basename($old), $originals) && file_exists(ROOT . '/' . $old)) {
+                    @unlink(ROOT . '/' . $old);
+                }
+                $iconeNovos[$campo] = 'uploads/icones/' . $filename;
+            }
+        }
+
+        $existRow = $pdo->query("SELECT t1_icone, t2_icone, t3_icone FROM conteudo_intro WHERE id = 1")->fetch(PDO::FETCH_ASSOC) ?: [];
+        $t1_icone = $iconeNovos['t1_icone'] ?? ($existRow['t1_icone'] ?: 'uploads/icones/icone01.png');
+        $t2_icone = $iconeNovos['t2_icone'] ?? ($existRow['t2_icone'] ?: 'uploads/icones/icone02.png');
+        $t3_icone = $iconeNovos['t3_icone'] ?? ($existRow['t3_icone'] ?: 'uploads/icones/icone03.png');
+
         $pdo->prepare(
-            "INSERT INTO conteudo_intro (id, pretitulo, titulo, titulo_destaque, texto, imagem, t1_titulo, t1_texto, t2_titulo, t2_texto, t3_titulo, t3_texto)
-             VALUES (1,?,?,?,?,?,?,?,?,?,?,?)
+            "INSERT INTO conteudo_intro (id, pretitulo, titulo, titulo_destaque, texto, imagem, t1_titulo, t1_texto, t1_icone, t2_titulo, t2_texto, t2_icone, t3_titulo, t3_texto, t3_icone)
+             VALUES (1,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
              ON DUPLICATE KEY UPDATE
                pretitulo=VALUES(pretitulo), titulo=VALUES(titulo), titulo_destaque=VALUES(titulo_destaque),
                texto=VALUES(texto), imagem=VALUES(imagem),
-               t1_titulo=VALUES(t1_titulo), t1_texto=VALUES(t1_texto),
-               t2_titulo=VALUES(t2_titulo), t2_texto=VALUES(t2_texto),
-               t3_titulo=VALUES(t3_titulo), t3_texto=VALUES(t3_texto)"
+               t1_titulo=VALUES(t1_titulo), t1_texto=VALUES(t1_texto), t1_icone=VALUES(t1_icone),
+               t2_titulo=VALUES(t2_titulo), t2_texto=VALUES(t2_texto), t2_icone=VALUES(t2_icone),
+               t3_titulo=VALUES(t3_titulo), t3_texto=VALUES(t3_texto), t3_icone=VALUES(t3_icone)"
         )->execute([$pretitulo, $titulo, '', $texto, $imagemAtual,
-                    $t1_titulo, $t1_texto, $t2_titulo, $t2_texto, $t3_titulo, $t3_texto]);
+                    $t1_titulo, $t1_texto, $t1_icone, $t2_titulo, $t2_texto, $t2_icone, $t3_titulo, $t3_texto, $t3_icone]);
 
-        echo json_encode(['success' => true, 'imagem' => $imagemNova]);
+        echo json_encode(['success' => true, 'imagem' => $imagemNova, 'icones' => $iconeNovos ?: null]);
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['success' => false, 'message' => 'Erro ao salvar no banco.']);
@@ -156,22 +194,62 @@ if ($secao === 'apoiar') {
     }
 
     try {
-        getDbConnection()->prepare(
+        $pdo = getDbConnection();
+
+        // Resolve ícones dos tópicos
+        $iconeDir = ROOT . '/uploads/icones/';
+        if (!is_dir($iconeDir)) mkdir($iconeDir, 0755, true);
+        $iconeMimeMap = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp', 'image/svg+xml' => 'svg'];
+        $iconeNovos = [];
+
+        foreach (['t1_icone', 't2_icone', 't3_icone'] as $campo) {
+            if (empty($_FILES[$campo]) || $_FILES[$campo]['error'] !== UPLOAD_ERR_OK) continue;
+            $file = $_FILES[$campo];
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mime = finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
+            if (!isset($iconeMimeMap[$mime])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Formato inválido para ícone. Use PNG, SVG, JPG ou WebP.']);
+                exit;
+            }
+            if ($file['size'] > 2 * 1024 * 1024) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Ícone muito grande (máx 2 MB).']);
+                exit;
+            }
+            $filename = $campo . '_ap_' . time() . '.' . $iconeMimeMap[$mime];
+            if (move_uploaded_file($file['tmp_name'], $iconeDir . $filename)) {
+                $originals = ['icone04.png', 'icone05.png', 'icone06.png'];
+                $old = $pdo->query("SELECT `$campo` FROM conteudo_apoiar WHERE id = 1")->fetchColumn();
+                if ($old && strpos($old, 'uploads/') === 0 && !in_array(basename($old), $originals) && file_exists(ROOT . '/' . $old)) {
+                    @unlink(ROOT . '/' . $old);
+                }
+                $iconeNovos[$campo] = 'uploads/icones/' . $filename;
+            }
+        }
+
+        $existRow = $pdo->query("SELECT t1_icone, t2_icone, t3_icone FROM conteudo_apoiar WHERE id = 1")->fetch(PDO::FETCH_ASSOC) ?: [];
+        $t1_icone = $iconeNovos['t1_icone'] ?? ($existRow['t1_icone'] ?: 'uploads/icones/icone04.png');
+        $t2_icone = $iconeNovos['t2_icone'] ?? ($existRow['t2_icone'] ?: 'uploads/icones/icone05.png');
+        $t3_icone = $iconeNovos['t3_icone'] ?? ($existRow['t3_icone'] ?: 'uploads/icones/icone06.png');
+
+        $pdo->prepare(
             "INSERT INTO conteudo_apoiar
-               (id, pretitulo, titulo, titulo_destaque, texto1, t1_titulo, t1_texto, t2_titulo, t2_texto, t3_titulo, t3_texto, texto2, botao_texto, botao_link, botao_target)
-             VALUES (1,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+               (id, pretitulo, titulo, titulo_destaque, texto1, t1_titulo, t1_texto, t1_icone, t2_titulo, t2_texto, t2_icone, t3_titulo, t3_texto, t3_icone, texto2, botao_texto, botao_link, botao_target)
+             VALUES (1,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
              ON DUPLICATE KEY UPDATE
                pretitulo=VALUES(pretitulo), titulo=VALUES(titulo), titulo_destaque=VALUES(titulo_destaque),
                texto1=VALUES(texto1),
-               t1_titulo=VALUES(t1_titulo), t1_texto=VALUES(t1_texto),
-               t2_titulo=VALUES(t2_titulo), t2_texto=VALUES(t2_texto),
-               t3_titulo=VALUES(t3_titulo), t3_texto=VALUES(t3_texto),
+               t1_titulo=VALUES(t1_titulo), t1_texto=VALUES(t1_texto), t1_icone=VALUES(t1_icone),
+               t2_titulo=VALUES(t2_titulo), t2_texto=VALUES(t2_texto), t2_icone=VALUES(t2_icone),
+               t3_titulo=VALUES(t3_titulo), t3_texto=VALUES(t3_texto), t3_icone=VALUES(t3_icone),
                texto2=VALUES(texto2), botao_texto=VALUES(botao_texto), botao_link=VALUES(botao_link),
                botao_target=VALUES(botao_target)"
         )->execute([$pretitulo, $titulo, '', $texto1,
-                    $t1_titulo, $t1_texto, $t2_titulo, $t2_texto, $t3_titulo, $t3_texto,
+                    $t1_titulo, $t1_texto, $t1_icone, $t2_titulo, $t2_texto, $t2_icone, $t3_titulo, $t3_texto, $t3_icone,
                     $texto2, $botao_texto, $botao_link, $botao_target]);
-        echo json_encode(['success' => true]);
+        echo json_encode(['success' => true, 'icones' => $iconeNovos ?: null]);
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['success' => false, 'message' => 'Erro ao salvar no banco.']);

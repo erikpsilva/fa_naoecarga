@@ -6,9 +6,9 @@ $ci = [
     'titulo'          => 'O que é <strong>bioética.</strong>',
     'texto'           => "É uma ponte que conecta Ciência e Ética\nA Bioética ajuda na construção de futuro um onde o avanço do conhecimento caminhe junto com o avanço moral da sociedade",
     'imagem'          => 'images/imgRato.jpg',
-    't1_titulo' => 'Menos sofrimento',  't1_texto' => 'Redução do uso de animais na ciência.',
-    't2_titulo' => 'Mais ciência',      't2_texto' => 'Fomento a métodos modernos e eficazes.',
-    't3_titulo' => 'Mais consciência',  't3_texto' => 'Formação de pessoas críticas e preparadas.',
+    't1_titulo' => 'Menos sofrimento',  't1_texto' => 'Redução do uso de animais na ciência.',  't1_icone' => 'uploads/icones/icone01.png',
+    't2_titulo' => 'Mais ciência',      't2_texto' => 'Fomento a métodos modernos e eficazes.',  't2_icone' => 'uploads/icones/icone02.png',
+    't3_titulo' => 'Mais consciência',  't3_texto' => 'Formação de pessoas críticas e preparadas.', 't3_icone' => 'uploads/icones/icone03.png',
 ];
 try { $r = getDbConnection()->query("SELECT * FROM conteudo_intro WHERE id = 1")->fetch(); if ($r) $ci = $r; } catch (Exception $e) {}
 ?>
@@ -83,11 +83,11 @@ try { $r = getDbConnection()->query("SELECT * FROM conteudo_intro WHERE id = 1")
                             <p class="contTopics__title">Tópicos</p>
                             <?php
                             $tops = [
-                                1 => [$ci['t1_titulo'], $ci['t1_texto']],
-                                2 => [$ci['t2_titulo'], $ci['t2_texto']],
-                                3 => [$ci['t3_titulo'], $ci['t3_texto']],
+                                1 => [$ci['t1_titulo'], $ci['t1_texto'], $ci['t1_icone'] ?? 'uploads/icones/icone01.png'],
+                                2 => [$ci['t2_titulo'], $ci['t2_texto'], $ci['t2_icone'] ?? 'uploads/icones/icone02.png'],
+                                3 => [$ci['t3_titulo'], $ci['t3_texto'], $ci['t3_icone'] ?? 'uploads/icones/icone03.png'],
                             ];
-                            foreach ($tops as $n => [$tt, $tx]):
+                            foreach ($tops as $n => [$tt, $tx, $ticone]):
                             ?>
                             <div class="contTopicRow">
                                 <div class="contField">
@@ -103,6 +103,18 @@ try { $r = getDbConnection()->query("SELECT * FROM conteudo_intro WHERE id = 1")
                                         <div id="edT<?= $n ?>texto"></div>
                                     </div>
                                     <input type="hidden" name="t<?= $n ?>_texto" id="inpT<?= $n ?>texto">
+                                </div>
+                                <div class="contField">
+                                    <label>Tópico <?= $n ?> — Ícone <em>(PNG, SVG, JPG ou WebP — máx 2 MB)</em></label>
+                                    <div class="contImgWrap">
+                                        <img id="iconPreview<?= $n ?>" class="contImgPreview" style="max-width:80px;max-height:80px;object-fit:contain;"
+                                             src="<?= BASE_URL . '/' . htmlspecialchars($ticone) ?>" alt="Ícone <?= $n ?>">
+                                        <div>
+                                            <input type="file" name="t<?= $n ?>_icone" id="iconInput<?= $n ?>"
+                                                   accept="image/png,image/svg+xml,image/webp,image/jpeg">
+                                            <p class="contImgHint">Deixe em branco para manter o ícone atual.</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <?php endforeach; ?>
@@ -160,6 +172,18 @@ try { $r = getDbConnection()->query("SELECT * FROM conteudo_intro WHERE id = 1")
         }
     });
 
+    // Icon previews
+    [1, 2, 3].forEach(function (n) {
+        document.getElementById('iconInput' + n).addEventListener('change', function () {
+            if (this.files && this.files[0]) {
+                var reader = new FileReader();
+                var id = 'iconPreview' + n;
+                reader.onload = function (e) { document.getElementById(id).src = e.target.result; };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+    });
+
     // Form submit
     document.getElementById('formIntro').addEventListener('submit', function (e) {
         e.preventDefault();
@@ -188,6 +212,12 @@ try { $r = getDbConnection()->query("SELECT * FROM conteudo_intro WHERE id = 1")
                 if (res.success) {
                     fb.textContent = 'Salvo com sucesso!'; fb.className = 'contFeedback contFeedback--ok';
                     if (res.imagem) document.getElementById('introImgPreview').src = BASE + '/' + res.imagem + '?t=' + Date.now();
+                    if (res.icones) {
+                        [1, 2, 3].forEach(function (n) {
+                            var campo = 't' + n + '_icone';
+                            if (res.icones[campo]) document.getElementById('iconPreview' + n).src = BASE + '/' + res.icones[campo] + '?t=' + Date.now();
+                        });
+                    }
                 } else {
                     fb.textContent = res.message || 'Erro ao salvar.'; fb.className = 'contFeedback contFeedback--err';
                 }
