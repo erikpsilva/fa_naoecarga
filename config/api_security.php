@@ -3,47 +3,41 @@
 $ALLOWED_ORIGINS = [
     'http://localhost',
     'http://localhost:3000',
+    'http://localhost:3002',
     'http://127.0.0.1',
     'http://127.0.0.1:3000',
+    'http://127.0.0.1:3002',
     'https://doe.forumanimal.org',
 ];
 
 function validateApiAccess(array $allowedOrigins): void {
     $origin  = $_SERVER['HTTP_ORIGIN']  ?? '';
     $referer = $_SERVER['HTTP_REFERER'] ?? '';
+    $host    = $_SERVER['HTTP_HOST']    ?? '';
+
+    // Extrai apenas os hosts permitidos (ignora protocolo e porta padrão)
+    $allowedHosts = array_map(fn($o) => parse_url($o, PHP_URL_HOST), $allowedOrigins);
 
     $originAllowed = false;
 
-    // Verifica pelo header Origin (presente em requisições cross-origin)
     if (!empty($origin)) {
-        foreach ($allowedOrigins as $allowed) {
-            if (rtrim($origin, '/') === rtrim($allowed, '/')) {
-                $originAllowed = true;
-                header('Access-Control-Allow-Origin: ' . $origin);
-                break;
-            }
+        // Compara pelo host do Origin (ignora protocolo e porta)
+        $originHost = parse_url($origin, PHP_URL_HOST) ?? '';
+        if ($originHost && in_array($originHost, $allowedHosts, true)) {
+            $originAllowed = true;
+            header('Access-Control-Allow-Origin: ' . $origin);
+        }
+    } elseif (!empty($referer)) {
+        // Sem Origin: valida pelo Referer
+        $refererHost = parse_url($referer, PHP_URL_HOST) ?? '';
+        if ($refererHost && in_array($refererHost, $allowedHosts, true)) {
+            $originAllowed = true;
         }
     } else {
-        // Sem header Origin = mesma origem (same-origin request)
-        // Valida pelo Referer como fallback
-        foreach ($allowedOrigins as $allowed) {
-            if (str_starts_with($referer, $allowed)) {
-                $originAllowed = true;
-                break;
-            }
-        }
-
-        // Se não tiver nem Origin nem Referer, é requisição direta ao servidor
-        // Permite somente se vier do próprio host (localhost ou produção)
-        if (!$originAllowed && empty($referer)) {
-            $host = $_SERVER['HTTP_HOST'] ?? '';
-            foreach ($allowedOrigins as $allowed) {
-                $allowedHost = parse_url($allowed, PHP_URL_HOST);
-                if ($host === $allowedHost) {
-                    $originAllowed = true;
-                    break;
-                }
-            }
+        // Sem Origin nem Referer: requisição direta — valida pelo HTTP_HOST
+        $bareHost = explode(':', $host)[0]; // remove porta se houver
+        if ($bareHost && in_array($bareHost, $allowedHosts, true)) {
+            $originAllowed = true;
         }
     }
 

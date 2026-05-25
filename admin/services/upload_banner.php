@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_once ROOT . '/config/database.php';
 
 $pagina  = isset($_POST['pagina']) ? trim($_POST['pagina']) : '';
-$paginasPermitidas = ['home', 'doacao'];
+$paginasPermitidas = ['home', 'doacao', 'doacao-sucesso', 'doacao-pendente', 'doacao-erro'];
 
 if (!in_array($pagina, $paginasPermitidas)) {
     http_response_code(400);

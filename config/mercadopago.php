@@ -1,12 +1,12 @@
 <?php
 
 // Credenciais de Teste
-define('MP_ACCESS_TOKEN_TEST', 'TEST-3536024446802367-050810-70b3e6224610dce156cffe5b6883af8c-2964733367');
-define('MP_PUBLIC_KEY_TEST',   'TEST-4a341595-9e1e-4b2f-97d0-bc7f7f73a03a');
+define('MP_ACCESS_TOKEN_TEST', 'TEST-4992767604389942-052511-37ac60b5cbb878c9ba29c4b16601dcc5-2964733367');
+define('MP_PUBLIC_KEY_TEST',   'TEST-ceb2cefe-dfcc-4e68-94c5-891ea72781d0');
 
 // Credenciais de Produção (usar apenas no backend)
-define('MP_ACCESS_TOKEN_PROD', 'APP_USR-3536024446802367-050810-eea621d7db59cacc1d2a64294f7310fa-2964733367');
-define('MP_PUBLIC_KEY_PROD',   'APP_USR-e014d6ed-06ae-4ebf-8fe1-5cf91360f371');
+define('MP_ACCESS_TOKEN_PROD', 'APP_USR-4992767604389942-052511-f61d1008278dc1ddc355691e9149330e-2964733367');
+define('MP_PUBLIC_KEY_PROD',   'APP_USR-25bc953e-a71f-4c05-bd4f-ab3d3b970e3d');
 
 // URL pública para webhooks — em localhost preencher com URL do ngrok
 define('MP_NGROK_URL', '');
