@@ -38,12 +38,30 @@ $chavesPermitidas = [
     'mp_modo_teste',
     'bloco_banner', 'bloco_intro', 'bloco_apoiar',
     'bloco_calculadora', 'bloco_apadrinhe', 'bloco_testemunhos',
+    'bloco_extra01', 'bloco_extra02', 'bloco_extra03', 'bloco_extra04',
+    'secoes_ordem',
 ];
+
+$secoesValidas = ['bloco_intro','bloco_apoiar','bloco_calculadora','bloco_apadrinhe','bloco_testemunhos',
+                  'bloco_extra01','bloco_extra02','bloco_extra03','bloco_extra04'];
 
 if (!in_array($chave, $chavesPermitidas) || $valor === '') {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Parâmetros inválidos']);
     exit;
+}
+
+// Valida o conteúdo de secoes_ordem: só aceita chaves conhecidas, sem duplicatas
+if ($chave === 'secoes_ordem') {
+    $partes = array_filter(array_map('trim', explode(',', $valor)));
+    if (count($partes) !== count($secoesValidas) ||
+        array_diff($partes, $secoesValidas) ||
+        count($partes) !== count(array_unique($partes))) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Ordem inválida']);
+        exit;
+    }
+    $valor = implode(',', $partes);
 }
 
 try {

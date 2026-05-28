@@ -21,14 +21,37 @@ $cp = ['pretitulo' => 'Por que nos apoiar?', 'titulo' => 'Três frentes <strong>
 try { $r = getDbConnection()->query("SELECT * FROM conteudo_apoiar WHERE id = 1")->fetch(); if ($r) $cp = $r; } catch (Exception $e) {}
 $ca = ['pretitulo' => 'Apadrinhe', 'titulo' => 'Veja porque sua doação <strong>pode mudar vidas.</strong>', 'texto' => '<p>Somos financiados exclusivamente por pessoas que acreditam na ciência sem animais. Atuamos onde as decisões realmente acontecem: nas comissões de ética, regulações e normas científicas.</p><p>Nossa missão é reduzir e substituir o uso de animais em pesquisa e ensino. É dentro das <strong>CEUAs (Comissões de Ética no Uso de Animais)</strong> que esse impacto começa.</p><p>Nosso principal instrumento é o <em>Curso de Formação em Proteção dos Animais nas CEUAs</em>, em parceria com a UFPR. Ele prepara representantes da sociedade civil para atuar nessas comissões, influenciando diretamente a aprovação de projetos com animais.</p><p>Cada representante pode impactar centenas ou até <strong>milhares de animais por ano</strong> em uma única instituição.</p>', 'imagem' => 'images/imgCientista.jpg', 'botao_texto' => 'QUERO APADRINHAR', 'botao_valor' => 120.00];
 try { $r = getDbConnection()->query("SELECT * FROM conteudo_apadrinhe WHERE id = 1")->fetch(); if ($r) $ca = $r; } catch (Exception $e) {}
+$ce1 = ['pretitulo' => null, 'titulo' => 'Título da seção extra 01', 'texto' => '<p>Texto da seção.</p>', 'imagem' => 'images/imgCientista.jpg', 'imagem_col' => 5, 'botao_texto' => null, 'botao_link' => null, 'botao_target' => '_self'];
+try { $r = getDbConnection()->query("SELECT * FROM conteudo_extra01 WHERE id = 1")->fetch(); if ($r) $ce1 = $r; } catch (Exception $e) {}
+$ce2 = ['pretitulo' => null, 'titulo' => 'Título da seção extra 02', 'texto' => '<p>Texto da seção.</p>', 'imagem' => 'images/imgCientista.jpg', 'imagem_col' => 5, 'botao_texto' => null, 'botao_link' => null, 'botao_target' => '_self'];
+try { $r = getDbConnection()->query("SELECT * FROM conteudo_extra02 WHERE id = 1")->fetch(); if ($r) $ce2 = $r; } catch (Exception $e) {}
+$ce3 = ['pretitulo' => null, 'titulo' => 'Título da seção extra 03', 'texto' => '<p>Texto da seção.</p>', 'botao_texto' => null, 'botao_link' => null, 'botao_target' => '_self'];
+try { $r = getDbConnection()->query("SELECT * FROM conteudo_extra03 WHERE id = 1")->fetch(); if ($r) $ce3 = $r; } catch (Exception $e) {}
+$ce4 = ['col1_pretitulo' => null, 'col1_titulo' => 'Título coluna 1', 'col1_texto' => '<p>Texto da coluna 1.</p>', 'col1_botao_texto' => null, 'col1_botao_link' => null, 'col1_botao_target' => '_self', 'col2_pretitulo' => null, 'col2_titulo' => 'Título coluna 2', 'col2_texto' => '<p>Texto da coluna 2.</p>', 'col2_botao_texto' => null, 'col2_botao_link' => null, 'col2_botao_target' => '_self'];
+try { $r = getDbConnection()->query("SELECT * FROM conteudo_extra04 WHERE id = 1")->fetch(); if ($r) $ce4 = $r; } catch (Exception $e) {}
 
 // ─── Visibilidade dos blocos ─────────────────────────────────────────────────
-$_blocoKeys = ['bloco_banner','bloco_intro','bloco_apoiar','bloco_calculadora','bloco_apadrinhe','bloco_testemunhos'];
+$_blocoKeys = ['bloco_banner','bloco_intro','bloco_apoiar','bloco_calculadora','bloco_apadrinhe','bloco_testemunhos',
+               'bloco_extra01','bloco_extra02','bloco_extra03','bloco_extra04'];
 $blocos = array_fill_keys($_blocoKeys, true);
 try {
     $stmt = getDbConnection()->query("SELECT chave, valor FROM configuracoes WHERE chave IN ('" . implode("','", $_blocoKeys) . "')");
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $_r) {
         $blocos[$_r['chave']] = ($_r['valor'] === '1');
+    }
+} catch (Exception $e) {}
+
+// ─── Ordem das seções ────────────────────────────────────────────────────────
+$_secoesDefault = ['bloco_intro','bloco_apoiar','bloco_calculadora','bloco_apadrinhe','bloco_testemunhos',
+                   'bloco_extra01','bloco_extra02','bloco_extra03','bloco_extra04'];
+$secoesOrdem = $_secoesDefault;
+try {
+    $_ord = getDbConnection()->query("SELECT valor FROM configuracoes WHERE chave = 'secoes_ordem'")->fetchColumn();
+    if ($_ord) {
+        $_partes = array_filter(array_map('trim', explode(',', $_ord)));
+        if (!array_diff($_partes, $_secoesDefault) && !array_diff($_secoesDefault, $_partes)) {
+            $secoesOrdem = array_values($_partes);
+        }
     }
 } catch (Exception $e) {}
 
@@ -80,6 +103,19 @@ function testimonialInitials($nome) {
 .homeSupport__textBlock p { margin: 0 0 .8em; }
 .homeSupport__textBlock p:last-child { margin-bottom: 0; }
 .homeSupport__button { margin-top: 32px; display: inline-block; }
+.homeExtra__text strong { font-weight: 600; }
+.homeExtra__text p { margin: 0 0 .8em; }
+.homeExtra__text p:last-child { margin-bottom: 0; }
+.homeExtra__image { width: 100%; border-radius: 12px; display: block; }
+.homeExtra__button { margin-top: 28px; display: inline-block; }
+.homeExtra { padding: 80px 0; }
+.homeExtra--imgLeft .col-lg-7 { padding-left: 40px; }
+.homeExtra--twoCol .col-md-6 + .col-md-6 { border-left: 1px solid #eee; }
+@media (max-width: 991px) {
+  .homeExtra--imgLeft .col-lg-5 { order: 2; margin-top: 32px; }
+  .homeExtra--imgLeft .col-lg-7 { order: 1; padding-left: 15px; }
+  .homeExtra--twoCol .col-md-6 + .col-md-6 { border-left: none; border-top: 1px solid #eee; margin-top: 40px; padding-top: 40px; }
+}
 .homeHero__text p { margin: 0 0 .4em; }
 .homeHero__text p:last-child { margin-bottom: 0; }
 .homeIntro__lead p { margin: 0 0 .6em; }
@@ -131,7 +167,9 @@ function testimonialInitials($nome) {
     </section>
     <?php endif; ?>
 
-    <?php if ($blocos['bloco_intro']): ?>
+    <?php foreach ($secoesOrdem as $_secao): ?>
+    <?php if (!($blocos[$_secao] ?? false)) continue; ?>
+    <?php switch ($_secao): case 'bloco_intro': ?>
     <section class="homeIntro" id="bioetica">
         <div class="container">
             <div class="row align-items-center">
@@ -142,7 +180,6 @@ function testimonialInitials($nome) {
                         <?php endif; ?>
                         <h2 class="homeTitle"><?= quillInline($ci['titulo']) ?></h2>
                         <div class="homeIntro__lead"><?= $ci['texto'] ?></div>
-
                         <div class="homeIntro__pillars">
                             <div class="homePillar">
                                 <?php if (!empty($ci['t1_icone'])): ?>
@@ -171,16 +208,13 @@ function testimonialInitials($nome) {
                         </div>
                     </div>
                 </div>
-
                 <div class="col-lg-5">
                     <img class="homeIntro__image" src="<?= BASE_URL . '/' . htmlspecialchars($ci['imagem']) ?>" alt="Rato em ambiente de laboratório">
                 </div>
             </div>
         </div>
     </section>
-    <?php endif; ?>
-
-    <?php if ($blocos['bloco_apoiar']): ?>
+    <?php break; case 'bloco_apoiar': ?>
     <section class="homeSupport">
         <div class="container">
             <?php if (!empty($cp['pretitulo'])): ?>
@@ -188,7 +222,6 @@ function testimonialInitials($nome) {
             <?php endif; ?>
             <h2 class="homeTitle"><?= quillInline($cp['titulo']) ?></h2>
             <div class="homeSupport__paragraphs"><?= $cp['texto1'] ?></div>
-
             <div class="homeSupport__cards">
                 <article class="homeImpactCard">
                     <?php if (!empty($cp['t1_icone'])): ?>
@@ -215,18 +248,14 @@ function testimonialInitials($nome) {
                     <p class="homeImpactCard__text"><strong><?= quillInline($cp['t3_titulo']) ?></strong><?= quillInline($cp['t3_texto']) ?></p>
                 </article>
             </div>
-
             <div class="homeSupport__textBlock"><?= $cp['texto2'] ?></div>
-
             <?php $cpTarget = ($cp['botao_target'] ?? '_self') === '_blank' ? '_blank' : '_self'; ?>
             <a class="homeButton homeButton--primary homeSupport__button"
                href="<?= htmlspecialchars($cp['botao_link']) ?>"
                target="<?= $cpTarget ?>"<?= $cpTarget === '_blank' ? ' rel="noopener noreferrer"' : '' ?>><?= htmlspecialchars($cp['botao_texto']) ?></a>
         </div>
     </section>
-    <?php endif; ?>
-
-    <?php if ($blocos['bloco_calculadora']): ?>
+    <?php break; case 'bloco_calculadora': ?>
     <section class="homeCalculator" id="calculadora">
         <div class="container">
             <div class="row align-items-center">
@@ -239,7 +268,6 @@ function testimonialInitials($nome) {
                     <div class="homeCalculator__text"><?= $calcCfg['calc_texto'] ?></div>
                     <?php endif; ?>
                 </div>
-
                 <div class="col-lg-8">
                     <div class="homeCalculator__panel">
                         <div class="homeCalculator__form">
@@ -250,16 +278,13 @@ function testimonialInitials($nome) {
                                 <button class="homeCalculator__value" type="button">R$<?= (int)$calcCfg['valor_btn_3'] ?></button>
                             </div>
                             <input class="homeCalculator__input" type="text" placeholder="Outro valor (R$)" aria-label="Outro valor">
-
                             <h3 class="homeCalculator__label homeCalculator__label--spacing">Frequência</h3>
                             <div class="homeCalculator__frequency">
                                 <button class="homeCalculator__frequencyButton homeCalculator__frequencyButton--active" type="button">Mensal</button>
                                 <button class="homeCalculator__frequencyButton" type="button">Única</button>
                             </div>
-
                             <a class="homeButton homeButton--primary homeCalculator__donate" href="#">FAZER DOAÇÃO MENSAL</a>
                         </div>
-
                         <div class="homeCalculator__result">
                             <div class="homeCalculator__tooltip">
                                 <i class="icon icon-interrogacao homeCalculator__help" aria-hidden="true"></i>
@@ -275,9 +300,7 @@ function testimonialInitials($nome) {
             </div>
         </div>
     </section>
-    <?php endif; ?>
-
-    <?php if ($blocos['bloco_apadrinhe']): ?>
+    <?php break; case 'bloco_apadrinhe': ?>
     <section class="homeSponsor" id="apadrinhe">
         <div class="container">
             <div class="row align-items-center">
@@ -292,16 +315,13 @@ function testimonialInitials($nome) {
                             data-valor="<?= htmlspecialchars(number_format((float)($ca['botao_valor'] ?? 120), 2, '.', '')) ?>">
                         <?= htmlspecialchars($ca['botao_texto'] ?? 'QUERO APADRINHAR') ?></button>
                 </div>
-
                 <div class="col-lg-5">
                     <img class="homeSponsor__image" src="<?= BASE_URL . '/' . htmlspecialchars($ca['imagem']) ?>" alt="Cientista usando microscópio">
                 </div>
             </div>
         </div>
     </section>
-    <?php endif; ?>
-
-    <?php if ($blocos['bloco_testemunhos']): ?>
+    <?php break; case 'bloco_testemunhos': ?>
     <section class="homeTestimonials" id="testemunhos">
         <style>
         .homeTestimonial__quote strong, .homeTestimonial__quote b { font-weight: 600; }
@@ -311,7 +331,6 @@ function testimonialInitials($nome) {
         <div class="container">
             <p class="homeEyebrow homeEyebrow--center">Testemunhos</p>
             <h2 class="homeTitle homeTitle--center">Quem já fez, <strong>recomenda!</strong></h2>
-
             <div class="homeTestimonials__slider">
             <?php if (!empty($testemunhosDb)): ?>
                 <?php foreach ($testemunhosDb as $t): ?>
@@ -331,60 +350,89 @@ function testimonialInitials($nome) {
                 </div>
                 <?php endforeach; ?>
             <?php else: ?>
-                <div class="homeTestimonials__slide">
-                    <article class="homeTestimonial">
-                        <p class="homeTestimonial__quote">Curso extremamente completo, com grandes nomes da área e que abrange desde a filosofia da ética até metodologias alternativas. É ótimo para expandir a visão sobre o assunto por diversos ângulos. Recomendo a todos!</p>
-                        <div class="homeTestimonial__author"><span class="homeTestimonial__avatar">GL</span><p class="homeTestimonial__name"><strong>Gabriella Lisboa</strong>Aluna da 1ª Edição do Curso</p></div>
-                        <button class="homeTestimonial__button" type="button">Ver mais</button>
-                    </article>
-                </div>
-                <div class="homeTestimonials__slide">
-                    <article class="homeTestimonial">
-                        <p class="homeTestimonial__quote">Confesso que o curso superou minhas expectativas. Alguns professores eu já conhecia e admirava, mas todos são absolutamente inteligentes e transmitem conhecimento com muita facilidade. Esse curso contribuiu demais com minha pesquisa de pós-graduação! Sou muito grata a toda a equipe.</p>
-                        <div class="homeTestimonial__author"><span class="homeTestimonial__avatar">GC</span><p class="homeTestimonial__name"><strong>Gabriela Chueiri de Moraes</strong>Médica Veterinária, doutoranda em epidemiologia e saúde única pela USP.<br>Aluna da 1ª Edição do Curso</p></div>
-                        <button class="homeTestimonial__button" type="button">Ver mais</button>
-                    </article>
-                </div>
-                <div class="homeTestimonials__slide">
-                    <article class="homeTestimonial">
-                        <p class="homeTestimonial__quote">Sou presidente de uma CEUA e membro de uma outra. Ambas são CEUAS que trabalham quase que em sua totalidade avaliando propostas que envolvem a utilização de animais de produção em atividades de ensino ou pesquisa. Em ambas as CEUAs sempre tentamos verificar a real necessidade da execução da atividade e, também, sempre buscamos a possibilidade da redução do número de animais utilizados, ou, a utilização de métodos alternativos. O início do curso foi difícil para mim. Achei o discurso dos professores um pouco agressivo demais. Como não sou membro de uma organização protetora de animais, me senti como sendo julgado e culpado por estar atuando fora de uma ONG deste tipo. Mas, entendendo que o objetivo fundamental do curso é a capacitação de representantes de ONGs em CEUAS e o incentivo a que tais representantes sejam, de fato, atuantes; como respeito a ideia, fui em frente. Gostei demais do curso, especialmente das aulas ministradas pelos professores Vicente, Tales (muito top as aulas do módulo 3), Paula e Evelyne. O curso me trouxe várias informações que eu desconhecia e me levou a novas reflexões sobre o conteúdo apresentado, abrindo minha mente para uma nova percepção da experimentação animal como um todo.</p>
-                        <div class="homeTestimonial__author"><span class="homeTestimonial__avatar">PA</span><p class="homeTestimonial__name"><strong>Paulo Augusto Esteves</strong>Embrapa Suínos e Aves<br>Aluno da 4ª Edição do Curso</p></div>
-                        <button class="homeTestimonial__button" type="button">Ver mais</button>
-                    </article>
-                </div>
-                <div class="homeTestimonials__slide">
-                    <article class="homeTestimonial">
-                        <p class="homeTestimonial__quote">Sou o coordenador da CEUA Mackenzie em São Paulo. Estou quase terminando o módulo 6 e portanto perto de terminar o curso. O nosso vice coordenador também está matriculado e esse curso está exercendo uma influência muito grande em nossa CEUA. Realmente o curso é muito bom e muito instrumentalização para nossa conduta como líderes de nossa CEUA...</p>
-                        <div class="homeTestimonial__author"><span class="homeTestimonial__avatar">MC</span><p class="homeTestimonial__name"><strong>Marcelo Coelho Almeida</strong>Psicólogo, Doutor em Educação Arte e História da Cultura<br>Coordenador da CEUA Mackenzie - Aluno da 5ª Edição</p></div>
-                        <button class="homeTestimonial__button" type="button">Ver mais</button>
-                    </article>
-                </div>
-                <div class="homeTestimonials__slide">
-                    <article class="homeTestimonial">
-                        <p class="homeTestimonial__quote">Terminei o curso e fiquei deslumbrado de tantas informações preciosas.</p>
-                        <div class="homeTestimonial__author"><span class="homeTestimonial__avatar">RF</span><p class="homeTestimonial__name"><strong>Rafael Ferreira Muniz</strong>Eng. de Pesca / Eng. de Seg. do Trabalho<br>Aluno da 5ª Edição do Curso</p></div>
-                        <button class="homeTestimonial__button" type="button">Ver mais</button>
-                    </article>
-                </div>
-                <div class="homeTestimonials__slide">
-                    <article class="homeTestimonial">
-                        <p class="homeTestimonial__quote">O Curso para Proteção dos Animais na Ciência oferecido pelo FNPDA é fundamental para quem se propõe a representar os interesses dos animais, pois nos possibilita obter conhecimento técnico, legislação, dicas de especialistas e membros mais experientes, de forma a otimizar nossos esforços para a discussão dos casos apresentados nas CEUAs e a busca de caminhos alternativos que beneficiem os animais não humanos.</p>
-                        <div class="homeTestimonial__author"><span class="homeTestimonial__avatar">AT</span><p class="homeTestimonial__name"><strong>Alexandre Terreri</strong>Ativista da causa animal<br>Aluno da 1ª Edição do Curso</p></div>
-                        <button class="homeTestimonial__button" type="button">Ver mais</button>
-                    </article>
-                </div>
-                <div class="homeTestimonials__slide">
-                    <article class="homeTestimonial">
-                        <p class="homeTestimonial__quote">Olá, meu nome é Eduardo, fiz a 3ª edição do curso em 2023. Embora já tivesse estudado um pouco sobre o tema, o curso foi fundamental para meu ingresso e atuação em Comissões de Ética. A diversidade de conteúdos permitiu revisar e expandir conhecimentos essenciais na atuação em defesa dos animais em CEUAs. Mais do que o conteúdo em si, a organização do curso me forneceu segurança e melhores maneiras de argumentar e me portar para alcançar melhores resultados para os animais nas discussões dos protocolos. Vejo como indispensável a proposição de cursos como este, que pode atingir o público docente que utiliza os animais, abrindo portas para novas abordagens experimentais, assim como para reunir, fortalecer e amadurecer pessoas que tem o desejo de ajudar os animais nos contextos de experimentação científica.</p>
-                        <div class="homeTestimonial__author"><span class="homeTestimonial__avatar">EH</span><p class="homeTestimonial__name"><strong>Eduardo Henrique Gonçalves</strong>Biólogo, pesquisador em bem-estar animal<br>Aluno da 3ª Edição do Curso</p></div>
-                        <button class="homeTestimonial__button" type="button">Ver mais</button>
-                    </article>
-                </div>
+                <div class="homeTestimonials__slide"><article class="homeTestimonial"><p class="homeTestimonial__quote">Curso extremamente completo, com grandes nomes da área e que abrange desde a filosofia da ética até metodologias alternativas. É ótimo para expandir a visão sobre o assunto por diversos ângulos. Recomendo a todos!</p><div class="homeTestimonial__author"><span class="homeTestimonial__avatar">GL</span><p class="homeTestimonial__name"><strong>Gabriella Lisboa</strong>Aluna da 1ª Edição do Curso</p></div><button class="homeTestimonial__button" type="button">Ver mais</button></article></div>
+                <div class="homeTestimonials__slide"><article class="homeTestimonial"><p class="homeTestimonial__quote">Confesso que o curso superou minhas expectativas. Alguns professores eu já conhecia e admirava, mas todos são absolutamente inteligentes e transmitem conhecimento com muita facilidade. Esse curso contribuiu demais com minha pesquisa de pós-graduação! Sou muito grata a toda a equipe.</p><div class="homeTestimonial__author"><span class="homeTestimonial__avatar">GC</span><p class="homeTestimonial__name"><strong>Gabriela Chueiri de Moraes</strong>Médica Veterinária, doutoranda em epidemiologia e saúde única pela USP.<br>Aluna da 1ª Edição do Curso</p></div><button class="homeTestimonial__button" type="button">Ver mais</button></article></div>
+                <div class="homeTestimonials__slide"><article class="homeTestimonial"><p class="homeTestimonial__quote">Sou presidente de uma CEUA e membro de uma outra...</p><div class="homeTestimonial__author"><span class="homeTestimonial__avatar">PA</span><p class="homeTestimonial__name"><strong>Paulo Augusto Esteves</strong>Embrapa Suínos e Aves<br>Aluno da 4ª Edição do Curso</p></div><button class="homeTestimonial__button" type="button">Ver mais</button></article></div>
             <?php endif; ?>
             </div>
         </div>
     </section>
-    <?php endif; ?>
+    <?php break; case 'bloco_extra01': ?>
+    <?php $_imgCol = max(1, min(11, (int)($ce1['imagem_col'] ?? 5))); $_txtCol = 12 - $_imgCol; ?>
+    <section class="homeExtra homeExtra--imgRight">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-<?= $_txtCol ?>">
+                    <?php if (!empty($ce1['pretitulo'])): ?><p class="homeEyebrow"><?= htmlspecialchars($ce1['pretitulo']) ?></p><?php endif; ?>
+                    <h2 class="homeTitle"><?= quillInline($ce1['titulo']) ?></h2>
+                    <div class="homeExtra__text"><?= $ce1['texto'] ?></div>
+                    <?php if (!empty($ce1['botao_texto']) && !empty($ce1['botao_link'])): ?>
+                    <?php $_t = ($ce1['botao_target'] ?? '_self') === '_blank' ? '_blank' : '_self'; ?>
+                    <a class="homeButton homeButton--primary homeExtra__button" href="<?= htmlspecialchars($ce1['botao_link']) ?>" target="<?= $_t ?>"<?= $_t === '_blank' ? ' rel="noopener noreferrer"' : '' ?>><?= htmlspecialchars($ce1['botao_texto']) ?></a>
+                    <?php endif; ?>
+                </div>
+                <div class="col-lg-<?= $_imgCol ?>"><img class="homeExtra__image" src="<?= BASE_URL . '/' . htmlspecialchars($ce1['imagem']) ?>" alt=""></div>
+            </div>
+        </div>
+    </section>
+    <?php break; case 'bloco_extra02': ?>
+    <?php $_imgCol = max(1, min(11, (int)($ce2['imagem_col'] ?? 5))); $_txtCol = 12 - $_imgCol; ?>
+    <section class="homeExtra homeExtra--imgLeft">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-<?= $_imgCol ?>"><img class="homeExtra__image" src="<?= BASE_URL . '/' . htmlspecialchars($ce2['imagem']) ?>" alt=""></div>
+                <div class="col-lg-<?= $_txtCol ?>">
+                    <?php if (!empty($ce2['pretitulo'])): ?><p class="homeEyebrow"><?= htmlspecialchars($ce2['pretitulo']) ?></p><?php endif; ?>
+                    <h2 class="homeTitle"><?= quillInline($ce2['titulo']) ?></h2>
+                    <div class="homeExtra__text"><?= $ce2['texto'] ?></div>
+                    <?php if (!empty($ce2['botao_texto']) && !empty($ce2['botao_link'])): ?>
+                    <?php $_t = ($ce2['botao_target'] ?? '_self') === '_blank' ? '_blank' : '_self'; ?>
+                    <a class="homeButton homeButton--primary homeExtra__button" href="<?= htmlspecialchars($ce2['botao_link']) ?>" target="<?= $_t ?>"<?= $_t === '_blank' ? ' rel="noopener noreferrer"' : '' ?>><?= htmlspecialchars($ce2['botao_texto']) ?></a>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </section>
+    <?php break; case 'bloco_extra03': ?>
+    <section class="homeExtra homeExtra--textOnly">
+        <div class="container">
+            <?php if (!empty($ce3['pretitulo'])): ?><p class="homeEyebrow"><?= htmlspecialchars($ce3['pretitulo']) ?></p><?php endif; ?>
+            <h2 class="homeTitle"><?= quillInline($ce3['titulo']) ?></h2>
+            <div class="homeExtra__text"><?= $ce3['texto'] ?></div>
+            <?php if (!empty($ce3['botao_texto']) && !empty($ce3['botao_link'])): ?>
+            <?php $_t = ($ce3['botao_target'] ?? '_self') === '_blank' ? '_blank' : '_self'; ?>
+            <a class="homeButton homeButton--primary homeExtra__button" href="<?= htmlspecialchars($ce3['botao_link']) ?>" target="<?= $_t ?>"<?= $_t === '_blank' ? ' rel="noopener noreferrer"' : '' ?>><?= htmlspecialchars($ce3['botao_texto']) ?></a>
+            <?php endif; ?>
+        </div>
+    </section>
+    <?php break; case 'bloco_extra04': ?>
+    <section class="homeExtra homeExtra--twoCol">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <?php if (!empty($ce4['col1_pretitulo'])): ?><p class="homeEyebrow"><?= htmlspecialchars($ce4['col1_pretitulo']) ?></p><?php endif; ?>
+                    <h2 class="homeTitle"><?= quillInline($ce4['col1_titulo']) ?></h2>
+                    <div class="homeExtra__text"><?= $ce4['col1_texto'] ?></div>
+                    <?php if (!empty($ce4['col1_botao_texto']) && !empty($ce4['col1_botao_link'])): ?>
+                    <?php $_t = ($ce4['col1_botao_target'] ?? '_self') === '_blank' ? '_blank' : '_self'; ?>
+                    <a class="homeButton homeButton--primary homeExtra__button" href="<?= htmlspecialchars($ce4['col1_botao_link']) ?>" target="<?= $_t ?>"<?= $_t === '_blank' ? ' rel="noopener noreferrer"' : '' ?>><?= htmlspecialchars($ce4['col1_botao_texto']) ?></a>
+                    <?php endif; ?>
+                </div>
+                <div class="col-md-6">
+                    <?php if (!empty($ce4['col2_pretitulo'])): ?><p class="homeEyebrow"><?= htmlspecialchars($ce4['col2_pretitulo']) ?></p><?php endif; ?>
+                    <h2 class="homeTitle"><?= quillInline($ce4['col2_titulo']) ?></h2>
+                    <div class="homeExtra__text"><?= $ce4['col2_texto'] ?></div>
+                    <?php if (!empty($ce4['col2_botao_texto']) && !empty($ce4['col2_botao_link'])): ?>
+                    <?php $_t = ($ce4['col2_botao_target'] ?? '_self') === '_blank' ? '_blank' : '_self'; ?>
+                    <a class="homeButton homeButton--primary homeExtra__button" href="<?= htmlspecialchars($ce4['col2_botao_link']) ?>" target="<?= $_t ?>"<?= $_t === '_blank' ? ' rel="noopener noreferrer"' : '' ?>><?= htmlspecialchars($ce4['col2_botao_texto']) ?></a>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </section>
+    <?php break; endswitch; ?>
+    <?php endforeach; ?>
+
     <div class="doacaoModal" id="doacaoModal">
         <div class="doacaoModal__overlay"></div>
         <div class="doacaoModal__box">

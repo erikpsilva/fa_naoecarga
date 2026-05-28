@@ -46,7 +46,8 @@
             </li>
 
             <?php
-            $conteudoSubs = ['conteudo-banner', 'conteudo-intro', 'conteudo-apoiar', 'conteudo-apadrinhe', 'calculadora'];
+            $conteudoSubs = ['conteudo-banner', 'conteudo-intro', 'conteudo-apoiar', 'conteudo-apadrinhe', 'calculadora',
+                             'conteudo-extra-01', 'conteudo-extra-02', 'conteudo-extra-03', 'conteudo-extra-04'];
             $conteudoAberto = in_array($subRoute, $conteudoSubs);
             ?>
             <li class="sidebar__item">
@@ -82,6 +83,30 @@
                         <a href="<?= BASE_URL ?>/admin/calculadora"
                            class="sidebar__subLink <?= ($subRoute === 'calculadora') ? 'sidebar__subLink--active' : '' ?>">
                             Calculadora de Animais
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= BASE_URL ?>/admin/conteudo-extra-01"
+                           class="sidebar__subLink <?= ($subRoute === 'conteudo-extra-01') ? 'sidebar__subLink--active' : '' ?>">
+                            Conteúdo Extra 01
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= BASE_URL ?>/admin/conteudo-extra-02"
+                           class="sidebar__subLink <?= ($subRoute === 'conteudo-extra-02') ? 'sidebar__subLink--active' : '' ?>">
+                            Conteúdo Extra 02
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= BASE_URL ?>/admin/conteudo-extra-03"
+                           class="sidebar__subLink <?= ($subRoute === 'conteudo-extra-03') ? 'sidebar__subLink--active' : '' ?>">
+                            Conteúdo Extra 03
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= BASE_URL ?>/admin/conteudo-extra-04"
+                           class="sidebar__subLink <?= ($subRoute === 'conteudo-extra-04') ? 'sidebar__subLink--active' : '' ?>">
+                            Conteúdo Extra 04
                         </a>
                     </li>
                 </ul>

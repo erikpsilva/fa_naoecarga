@@ -353,5 +353,181 @@ if ($secao === 'calculadora_texto') {
     exit;
 }
 
+/* ── Conteúdo Extra 01 (texto esq, imagem dir) ───────────────── */
+if ($secao === 'extra01') {
+    $pretitulo   = trim($_POST['pretitulo'] ?? '') ?: null;
+    $titulo      = cleanHtml($_POST['titulo'] ?? '');
+    $texto       = cleanHtml($_POST['texto']  ?? '');
+    $imagem_col  = max(1, min(12, (int)($_POST['imagem_col'] ?? 5)));
+    $botao_texto = trim($_POST['botao_texto'] ?? '') ?: null;
+    $botao_link  = trim($_POST['botao_link']  ?? '') ?: null;
+    $botao_target = !empty($_POST['botao_nova_aba']) ? '_blank' : '_self';
+
+    if (!$titulo || !$texto) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Preencha todos os campos obrigatórios.']);
+        exit;
+    }
+
+    try {
+        $pdo = getDbConnection();
+        $imagemNova = null;
+        if (!empty($_FILES['imagem']) && $_FILES['imagem']['error'] === UPLOAD_ERR_OK) {
+            $file    = $_FILES['imagem'];
+            $allowed = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+            $finfo   = finfo_open(FILEINFO_MIME_TYPE);
+            $mime    = finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
+            if (!isset($allowed[$mime])) { http_response_code(400); echo json_encode(['success' => false, 'message' => 'Formato inválido.']); exit; }
+            if ($file['size'] > 5 * 1024 * 1024) { http_response_code(400); echo json_encode(['success' => false, 'message' => 'Imagem muito grande (máx 5 MB).']); exit; }
+            $dir = ROOT . '/uploads/conteudo/';
+            if (!is_dir($dir)) mkdir($dir, 0755, true);
+            $filename = 'extra01_' . time() . '.' . $allowed[$mime];
+            if (move_uploaded_file($file['tmp_name'], $dir . $filename)) {
+                $old = $pdo->query("SELECT imagem FROM conteudo_extra01 WHERE id = 1")->fetchColumn();
+                if ($old && strpos($old, 'uploads/') === 0 && file_exists(ROOT . '/' . $old)) @unlink(ROOT . '/' . $old);
+                $imagemNova = 'uploads/conteudo/' . $filename;
+            }
+        }
+        $imagemAtual = $imagemNova ?? ($pdo->query("SELECT imagem FROM conteudo_extra01 WHERE id = 1")->fetchColumn() ?: 'images/imgCientista.jpg');
+        $pdo->prepare(
+            "INSERT INTO conteudo_extra01 (id, pretitulo, titulo, texto, imagem, imagem_col, botao_texto, botao_link, botao_target)
+             VALUES (1,?,?,?,?,?,?,?,?)
+             ON DUPLICATE KEY UPDATE pretitulo=VALUES(pretitulo), titulo=VALUES(titulo), texto=VALUES(texto),
+               imagem=VALUES(imagem), imagem_col=VALUES(imagem_col),
+               botao_texto=VALUES(botao_texto), botao_link=VALUES(botao_link), botao_target=VALUES(botao_target)"
+        )->execute([$pretitulo, $titulo, $texto, $imagemAtual, $imagem_col, $botao_texto, $botao_link, $botao_target]);
+        echo json_encode(['success' => true, 'imagem' => $imagemNova]);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Erro ao salvar no banco.']);
+    }
+    exit;
+}
+
+/* ── Conteúdo Extra 02 (imagem esq, texto dir) ───────────────── */
+if ($secao === 'extra02') {
+    $pretitulo   = trim($_POST['pretitulo'] ?? '') ?: null;
+    $titulo      = cleanHtml($_POST['titulo'] ?? '');
+    $texto       = cleanHtml($_POST['texto']  ?? '');
+    $imagem_col  = max(1, min(12, (int)($_POST['imagem_col'] ?? 5)));
+    $botao_texto = trim($_POST['botao_texto'] ?? '') ?: null;
+    $botao_link  = trim($_POST['botao_link']  ?? '') ?: null;
+    $botao_target = !empty($_POST['botao_nova_aba']) ? '_blank' : '_self';
+
+    if (!$titulo || !$texto) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Preencha todos os campos obrigatórios.']);
+        exit;
+    }
+
+    try {
+        $pdo = getDbConnection();
+        $imagemNova = null;
+        if (!empty($_FILES['imagem']) && $_FILES['imagem']['error'] === UPLOAD_ERR_OK) {
+            $file    = $_FILES['imagem'];
+            $allowed = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+            $finfo   = finfo_open(FILEINFO_MIME_TYPE);
+            $mime    = finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
+            if (!isset($allowed[$mime])) { http_response_code(400); echo json_encode(['success' => false, 'message' => 'Formato inválido.']); exit; }
+            if ($file['size'] > 5 * 1024 * 1024) { http_response_code(400); echo json_encode(['success' => false, 'message' => 'Imagem muito grande (máx 5 MB).']); exit; }
+            $dir = ROOT . '/uploads/conteudo/';
+            if (!is_dir($dir)) mkdir($dir, 0755, true);
+            $filename = 'extra02_' . time() . '.' . $allowed[$mime];
+            if (move_uploaded_file($file['tmp_name'], $dir . $filename)) {
+                $old = $pdo->query("SELECT imagem FROM conteudo_extra02 WHERE id = 1")->fetchColumn();
+                if ($old && strpos($old, 'uploads/') === 0 && file_exists(ROOT . '/' . $old)) @unlink(ROOT . '/' . $old);
+                $imagemNova = 'uploads/conteudo/' . $filename;
+            }
+        }
+        $imagemAtual = $imagemNova ?? ($pdo->query("SELECT imagem FROM conteudo_extra02 WHERE id = 1")->fetchColumn() ?: 'images/imgCientista.jpg');
+        $pdo->prepare(
+            "INSERT INTO conteudo_extra02 (id, pretitulo, titulo, texto, imagem, imagem_col, botao_texto, botao_link, botao_target)
+             VALUES (1,?,?,?,?,?,?,?,?)
+             ON DUPLICATE KEY UPDATE pretitulo=VALUES(pretitulo), titulo=VALUES(titulo), texto=VALUES(texto),
+               imagem=VALUES(imagem), imagem_col=VALUES(imagem_col),
+               botao_texto=VALUES(botao_texto), botao_link=VALUES(botao_link), botao_target=VALUES(botao_target)"
+        )->execute([$pretitulo, $titulo, $texto, $imagemAtual, $imagem_col, $botao_texto, $botao_link, $botao_target]);
+        echo json_encode(['success' => true, 'imagem' => $imagemNova]);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Erro ao salvar no banco.']);
+    }
+    exit;
+}
+
+/* ── Conteúdo Extra 03 (somente texto) ───────────────────────── */
+if ($secao === 'extra03') {
+    $pretitulo   = trim($_POST['pretitulo'] ?? '') ?: null;
+    $titulo      = cleanHtml($_POST['titulo'] ?? '');
+    $texto       = cleanHtml($_POST['texto']  ?? '');
+    $botao_texto = trim($_POST['botao_texto'] ?? '') ?: null;
+    $botao_link  = trim($_POST['botao_link']  ?? '') ?: null;
+    $botao_target = !empty($_POST['botao_nova_aba']) ? '_blank' : '_self';
+
+    if (!$titulo || !$texto) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Preencha todos os campos obrigatórios.']);
+        exit;
+    }
+
+    try {
+        getDbConnection()->prepare(
+            "INSERT INTO conteudo_extra03 (id, pretitulo, titulo, texto, botao_texto, botao_link, botao_target)
+             VALUES (1,?,?,?,?,?,?)
+             ON DUPLICATE KEY UPDATE pretitulo=VALUES(pretitulo), titulo=VALUES(titulo), texto=VALUES(texto),
+               botao_texto=VALUES(botao_texto), botao_link=VALUES(botao_link), botao_target=VALUES(botao_target)"
+        )->execute([$pretitulo, $titulo, $texto, $botao_texto, $botao_link, $botao_target]);
+        echo json_encode(['success' => true]);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Erro ao salvar no banco.']);
+    }
+    exit;
+}
+
+/* ── Conteúdo Extra 04 (duas colunas) ────────────────────────── */
+if ($secao === 'extra04') {
+    $c1_pretitulo   = trim($_POST['col1_pretitulo'] ?? '') ?: null;
+    $c1_titulo      = cleanHtml($_POST['col1_titulo'] ?? '');
+    $c1_texto       = cleanHtml($_POST['col1_texto']  ?? '');
+    $c1_botao_texto = trim($_POST['col1_botao_texto'] ?? '') ?: null;
+    $c1_botao_link  = trim($_POST['col1_botao_link']  ?? '') ?: null;
+    $c1_botao_target = !empty($_POST['col1_botao_nova_aba']) ? '_blank' : '_self';
+    $c2_pretitulo   = trim($_POST['col2_pretitulo'] ?? '') ?: null;
+    $c2_titulo      = cleanHtml($_POST['col2_titulo'] ?? '');
+    $c2_texto       = cleanHtml($_POST['col2_texto']  ?? '');
+    $c2_botao_texto = trim($_POST['col2_botao_texto'] ?? '') ?: null;
+    $c2_botao_link  = trim($_POST['col2_botao_link']  ?? '') ?: null;
+    $c2_botao_target = !empty($_POST['col2_botao_nova_aba']) ? '_blank' : '_self';
+
+    if (!$c1_titulo || !$c1_texto || !$c2_titulo || !$c2_texto) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Preencha os títulos e textos de ambas as colunas.']);
+        exit;
+    }
+
+    try {
+        getDbConnection()->prepare(
+            "INSERT INTO conteudo_extra04
+               (id, col1_pretitulo, col1_titulo, col1_texto, col1_botao_texto, col1_botao_link, col1_botao_target,
+                    col2_pretitulo, col2_titulo, col2_texto, col2_botao_texto, col2_botao_link, col2_botao_target)
+             VALUES (1,?,?,?,?,?,?,?,?,?,?,?,?)
+             ON DUPLICATE KEY UPDATE
+               col1_pretitulo=VALUES(col1_pretitulo), col1_titulo=VALUES(col1_titulo), col1_texto=VALUES(col1_texto),
+               col1_botao_texto=VALUES(col1_botao_texto), col1_botao_link=VALUES(col1_botao_link), col1_botao_target=VALUES(col1_botao_target),
+               col2_pretitulo=VALUES(col2_pretitulo), col2_titulo=VALUES(col2_titulo), col2_texto=VALUES(col2_texto),
+               col2_botao_texto=VALUES(col2_botao_texto), col2_botao_link=VALUES(col2_botao_link), col2_botao_target=VALUES(col2_botao_target)"
+        )->execute([$c1_pretitulo, $c1_titulo, $c1_texto, $c1_botao_texto, $c1_botao_link, $c1_botao_target,
+                    $c2_pretitulo, $c2_titulo, $c2_texto, $c2_botao_texto, $c2_botao_link, $c2_botao_target]);
+        echo json_encode(['success' => true]);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Erro ao salvar no banco.']);
+    }
+    exit;
+}
+
 http_response_code(400);
 echo json_encode(['success' => false, 'message' => 'Seção inválida.']);
